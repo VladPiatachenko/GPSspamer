@@ -29,19 +29,21 @@ jobs:
 
       - name: Prepare deploy branch
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
 
-          # Save JAR to temp
           mkdir -p deploy-temp
           cp target/*.jar deploy-temp/app.jar
 
-          # Clone DEPLOY branch into subfolder
           git clone --branch deploy https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch || \
             git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch
 
           cd deploy-branch
           git switch deploy || git checkout --orphan deploy
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
           git rm -rf .
           mv ../deploy-temp/app.jar .
           git add app.jar
