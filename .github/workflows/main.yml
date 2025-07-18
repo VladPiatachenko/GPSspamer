@@ -1,10 +1,3 @@
-name: Build and Push Jar to `build` branch
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,6 +11,9 @@ jobs:
         with:
           java-version: '24'
           distribution: 'temurin'
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
 
       - name: Build JAR
         run: ./mvnw clean package -DskipTests
@@ -34,4 +30,3 @@ jobs:
           git add app.jar Dockerfile
           git commit -m "Deploy artifact"
           git push --force origin deploy
-
