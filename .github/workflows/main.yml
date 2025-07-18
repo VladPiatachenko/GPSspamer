@@ -35,12 +35,12 @@ jobs:
       - name: Authenticate gh CLI
         run: echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
 
-      - name: Push jar to deploy branch
+      - name: Switch to deploy branch and push jar
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          mkdir deploy-temp
+          mkdir -p deploy-temp
           cp target/*.jar deploy-temp/app.jar
 
           git fetch origin deploy || true
@@ -49,8 +49,8 @@ jobs:
           mv deploy-temp/app.jar .
 
           git add app.jar
-          git commit -m "Deploy jar from main" || echo "Nothing to commit"
+          git commit -m "Deploy jar from main"
 
-          gh repo set-default VladPiatachenko/GPSspamer
-          gh auth status
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git
+
           git push --force origin deploy
