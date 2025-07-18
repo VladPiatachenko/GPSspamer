@@ -27,24 +27,22 @@ jobs:
       - name: Build project
         run: ./mvnw clean package -DskipTests
 
-      - name: Prepare deploy branch
+      - name: Prepare and push deploy branch
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          
-          mkdir -p temp-main
+
+          mkdir temp-main
           rsync -av --exclude='.git' ./ temp-main/
-          
           cp target/*.jar temp-main/app.jar
-          
-          git clone --branch deploy https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch || \
-            git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch
-          
+
+          git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch
           cd deploy-branch
-          
+
+          git checkout deploy 2>/dev/null || git checkout -b deploy
+
           rsync -av --delete ../temp-main/ .
-          
+
           git add .
           git commit -m "Deploy from main with updated jar" || echo "No changes to commit"
-          git push origin deploy
-        
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy
