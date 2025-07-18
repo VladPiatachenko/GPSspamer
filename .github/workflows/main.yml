@@ -40,4 +40,5 @@ jobs:
           mv deploy-temp/app.jar .
           git add app.jar
           git commit -m "Deploy jar from main"
-          git push --force origin deploy
+          git push --force https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy
+
