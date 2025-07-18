@@ -1,4 +1,4 @@
-name: Build and push to deploy by token
+name: Build and push to deploy
 
 on:
   push:
