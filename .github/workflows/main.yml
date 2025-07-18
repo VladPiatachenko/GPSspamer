@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone repo
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -21,32 +21,34 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Grant execute permission for mvnw
+      - name: Grant permission to mvnw
         run: chmod +x mvnw
 
       - name: Build jar
         run: ./mvnw clean package -DskipTests
 
-      - name: Prepare jar for deployment
-        run: |
-          mkdir -p deploy-temp
-          cp target/*.jar deploy-temp/app.jar
+      - name: Install GitHub CLI
+        uses: cli/cli-action@v2
 
-      - name: Switch to deploy branch and commit jar
+      - name: Authenticate with GH_PAT
+        run: echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
+
+      - name: Push jar to deploy branch
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
+          mkdir deploy-tmp
+          cp target/*.jar deploy-tmp/app.jar
+
           git fetch origin deploy || true
           git switch deploy || git checkout --orphan deploy
           git rm -rf .
-          mv deploy-temp/app.jar .
+          mv deploy-tmp/app.jar .
 
           git add app.jar
-          git commit -m "Deploy jar from main" || echo "No changes to commit"
-
-      - name: Set correct remote and push
-        run: |
-          git remote remove origin
-          git remote add origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git
+          git commit -m "Deploy jar from main" || echo "Nothing to commit"
+          
+          gh repo set-default VladPiatachenko/GPSspamer
+          gh auth status
           git push --force origin deploy
