@@ -46,14 +46,17 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-          # Save jar before branch switch
-          cp deploy-artifact/*.jar app.jar
+          mkdir temp
+          cp deploy-artifact/*.jar temp/app.jar
 
           git fetch origin deploy || true
           git switch --orphan deploy
           git reset --hard
           git clean -fdx
 
+          mv temp/app.jar app.jar
+
           git add app.jar
           git commit -m "Deploy jar"
           git push --force origin deploy
+      
