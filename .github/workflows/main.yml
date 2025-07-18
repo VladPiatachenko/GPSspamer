@@ -24,16 +24,22 @@ jobs:
       - name: Build the project
         run: ./mvnw clean package -DskipTests
 
-      - name: Prepare deploy branch and push JAR
+      - name: Prepare `deploy` branch
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+
+          mkdir -p deploy-artifact
+          cp target/*.jar deploy-artifact/app.jar
+
           git fetch origin deploy || true
           git checkout --orphan deploy
           git reset --hard
           git clean -fdx
 
-          cp target/*.jar app.jar
+          cp deploy-artifact/app.jar .
+          rm -rf deploy-artifact
+
           git add app.jar
           git commit -m "Build artifact"
           git push --force origin deploy
