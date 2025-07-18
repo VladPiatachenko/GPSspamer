@@ -27,22 +27,24 @@ jobs:
       - name: Build project
         run: ./mvnw clean package -DskipTests
 
-      - name: Prepare and push deploy branch
+      - name: Prepare deploy branch
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-
-          mkdir temp-main
-          rsync -av --exclude='.git' ./ temp-main/
-          cp target/*.jar temp-main/app.jar
-
-          git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch
+          
+          mkdir -p deploy-temp
+          cp target/*.jar deploy-temp/app.jar
+          
+          git clone --branch deploy https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch || \
+            git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch
+          
           cd deploy-branch
-
-          git checkout deploy 2>/dev/null || git checkout -b deploy
-
-          rsync -av --delete ../temp-main/ .
-
-          git add .
-          git commit -m "Deploy from main with updated jar" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy
+          
+          git switch deploy || git checkout --orphan deploy
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          
+          cp ../deploy-temp/app.jar .
+          git add app.jar
+          git commit -m "Update jar"
+          git push --force origin deploy
