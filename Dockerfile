@@ -1,14 +1,12 @@
-# Use a lightweight OpenJDK base image
+# Stage 1: build the jar
+FROM eclipse-temurin:24-jdk AS builder
+WORKDIR /build
+COPY . .
+RUN ./mvnw clean package -DskipTests
+
+# Stage 2: run the jar
 FROM eclipse-temurin:24-jdk
-
-# Create app directory
 WORKDIR /app
-
-# Copy the built jar into the container
-COPY target/*.jar app.jar
-
-# Expose the port Spring Boot runs on
+COPY --from=builder /build/target/*.jar app.jar
 EXPOSE 8080
-
-# Run the jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
