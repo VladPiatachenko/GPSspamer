@@ -1,42 +1,34 @@
-name: Build and Push Jar to `build` branch
+name: Build and Deploy JAR
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
-   build:
-     runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-     steps:
-       - name: Checkout code
-         uses: actions/checkout@v3
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-       - name: Set up Java
-         uses: actions/setup-java@v3
-         with:
-           java-version: '24'
-           distribution: 'temurin'
+      - name: Make mvnw executable
+        run: chmod +x mvnw
 
-       - name: Make mvnw executable
-         run: chmod +x mvnw
+      - name: Build the project
+        run: ./mvnw clean package -DskipTests
 
-       - name: Build JAR
-         run: ./mvnw clean package -DskipTests
+      - name: Prepare deploy branch and push JAR
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git fetch origin deploy || true
+          git checkout --orphan deploy
+          git reset --hard
+          git clean -fdx
 
-       - name: Push jar to `deploy` branch
-         run: |
-           git config user.name github-actions
-           git config user.email github-actions@github.com
-           git fetch origin deploy || true
-           
-           git checkout --orphan deploy
-           git reset --hard
-           git clean -fdx
-           
-           cp target/*.jar app.jar
-           git add app.jar
-           git commit -m "Build artifact"
-           git push --force origin deploy
-    
+          cp target/*.jar app.jar
+          git add app.jar
+          git commit -m "Build artifact"
+          git push --force origin deploy
