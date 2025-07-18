@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: gps-simulator
+    env: docker
+    plan: free
+    autoDeploy: true
