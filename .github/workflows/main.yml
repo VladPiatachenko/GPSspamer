@@ -25,15 +25,18 @@ jobs:
        - name: Build JAR
          run: ./mvnw clean package -DskipTests
 
-       - name: Prepare `deploy` branch
+       - name: Push jar to `deploy` branch
          run: |
            git config user.name github-actions
            git config user.email github-actions@github.com
            git fetch origin deploy || true
-           git switch --orphan deploy
-           git rm -rf .
+           
+           git checkout --orphan deploy
+           git reset --hard
+           git clean -fdx
+           
            cp target/*.jar app.jar
-           cp Dockerfile .
-            git add app.jar Dockerfile
-            git commit -m "Deploy artifact"
-            git push --force origin deploy
+           git add app.jar
+           git commit -m "Build artifact"
+           git push --force origin deploy
+    
