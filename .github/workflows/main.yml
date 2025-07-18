@@ -29,17 +29,17 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-          mkdir -p deploy-artifact
-          cp target/*.jar deploy-artifact/app.jar
+          mkdir -p "$HOME/artifacts"
+          cp target/*.jar "$HOME/artifacts/app.jar"
 
           git fetch origin deploy || true
-          git checkout --orphan deploy
+          git switch --orphan deploy
           git reset --hard
           git clean -fdx
 
-          cp deploy-artifact/app.jar .
-          rm -rf deploy-artifact
+          cp "$HOME/artifacts/app.jar" .
 
           git add app.jar
           git commit -m "Build artifact"
           git push --force origin deploy
+      
