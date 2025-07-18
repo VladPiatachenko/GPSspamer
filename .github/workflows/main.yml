@@ -1,32 +1,39 @@
+name: Build and Push Jar to `build` branch
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+   build:
+     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+     steps:
+       - name: Checkout code
+         uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          java-version: '24'
-          distribution: 'temurin'
+       - name: Set up Java
+         uses: actions/setup-java@v3
+         with:
+           java-version: '24'
+           distribution: 'temurin'
 
-      - name: Make mvnw executable
-        run: chmod +x mvnw
+       - name: Make mvnw executable
+         run: chmod +x mvnw
 
-      - name: Build JAR
-        run: ./mvnw clean package -DskipTests
+       - name: Build JAR
+         run: ./mvnw clean package -DskipTests
 
-      - name: Prepare `deploy` branch
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git fetch origin deploy || true
-          git switch --orphan deploy
-          git rm -rf .
-          cp target/*.jar app.jar
-          cp Dockerfile .
-          git add app.jar Dockerfile
-          git commit -m "Deploy artifact"
-          git push --force origin deploy
+       - name: Prepare `deploy` branch
+         run: |
+           git config user.name github-actions
+           git config user.email github-actions@github.com
+           git fetch origin deploy || true
+           git switch --orphan deploy
+           git rm -rf .
+           cp target/*.jar app.jar
+           cp Dockerfile .
+            git add app.jar Dockerfile
+            git commit -m "Deploy artifact"
+            git push --force origin deploy
