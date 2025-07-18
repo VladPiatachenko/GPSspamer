@@ -32,19 +32,19 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           
-          mkdir -p deploy-temp
-          cp target/*.jar deploy-temp/app.jar
+          mkdir -p temp-main
+          rsync -av --exclude='.git' ./ temp-main/
+          
+          cp target/*.jar temp-main/app.jar
           
           git clone --branch deploy https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch || \
             git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy-branch
           
           cd deploy-branch
           
-          git switch deploy || git checkout --orphan deploy
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          rsync -av --delete ../temp-main/ .
           
-          cp ../deploy-temp/app.jar .
-          git add app.jar
-          git commit -m "Update jar"
-          git push --force origin deploy
+          git add .
+          git commit -m "Deploy from main with updated jar" || echo "No changes to commit"
+          git push origin deploy
+        
