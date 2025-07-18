@@ -1,4 +1,4 @@
-name: Build and push to deploy
+name: Build and Deploy
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Clone repo
         uses: actions/checkout@v4
@@ -26,19 +27,26 @@ jobs:
       - name: Build jar
         run: ./mvnw clean package -DskipTests
 
-      - name: Switch to deploy branch and push jar
+      - name: Prepare jar for deployment
+        run: |
+          mkdir -p deploy-temp
+          cp target/*.jar deploy-temp/app.jar
+
+      - name: Switch to deploy branch and commit jar
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-
-          mkdir -p deploy-temp
-          cp target/*.jar deploy-temp/app.jar
 
           git fetch origin deploy || true
           git switch deploy || git checkout --orphan deploy
           git rm -rf .
           mv deploy-temp/app.jar .
-          git add app.jar
-          git commit -m "Deploy jar from main"
-          git push --force https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git deploy
 
+          git add app.jar
+          git commit -m "Deploy jar from main" || echo "No changes to commit"
+
+      - name: Set correct remote and push
+        run: |
+          git remote remove origin
+          git remote add origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/VladPiatachenko/GPSspamer.git
+          git push --force origin deploy
