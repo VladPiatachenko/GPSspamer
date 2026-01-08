@@ -1,0 +1,243 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>UAV GPS Spoofing (LIVE)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; }
+        .top { padding: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+        #map { height: calc(100vh - 210px); }
+        input, select, button { width: 100%; padding: 6px; margin-top: 6px; box-sizing: border-box; }
+        .hint { font-size: 12px; color: #666; margin-top: 6px; }
+        .row { display:flex; gap:8px; margin-top:6px; }
+        .row > button { width: 100%; }
+        .status { margin-top: 8px; font-size: 12px; padding: 6px; border-radius: 6px; background:#f6f6f6; }
+        .status.ok { border: 1px solid #cfe9cf; }
+        .status.bad { border: 1px solid #f0caca; }
+        code { background: #f1f1f1; padding: 1px 4px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="top">
+    <div class="card">
+        <b>1) Select flight (LIVE)</b>
+        <label>flightId (FR24)</label>
+        <input id="flightId" value="34242a02"/>
+
+        <div class="row">
+            <button id="selectFlight">Select flight</button>
+            <button id="startLive">Start LIVE</button>
+        </div>
+        <button id="stopLive" disabled>Stop LIVE</button>
+
+        <div class="hint">
+            Tip: use a valid FR24 <code>flightId</code>. If the flight ended / not available, you will get heartbeat “No data”.
+        </div>
+
+        <div id="statusBox" class="status ok">Ready.</div>
+    </div>
+
+    <div class="card">
+        <b>2) Attack config</b>
+
+        <label>Enabled</label>
+        <select id="enabled">
+            <option value="false">false</option>
+            <option value="true">true</option>
+        </select>
+
+        <label>Type</label>
+        <select id="atype">
+            <option>NONE</option>
+            <option>BIAS</option>
+            <option>DRIFT</option>
+            <option>NOISE</option>
+        </select>
+
+        <label>biasMeters (BIAS/DRIFT)</label>
+        <input id="bias" value="200"/>
+
+        <label>driftMps (DRIFT)</label>
+        <input id="drift" value="2"/>
+
+        <label>noiseSigmaMeters (NOISE)</label>
+        <input id="sigma" value="30"/>
+
+        <button id="applyAttack">Apply attack</button>
+
+        <div class="hint">
+            Expect to see red track diverge from green when attack is enabled.
+        </div>
+    </div>
+
+    <div class="card">
+        <b>3) Our API outputs</b>
+
+        <div class="row">
+            <button id="refreshCurrent">GET /api/current</button>
+            <button id="downloadLog">Download log CSV</button>
+        </div>
+
+        <pre id="currentOut" style="white-space: pre-wrap; font-size: 12px; margin-top: 8px;"></pre>
+        <div class="hint">Truth = green, Attack = red. CSV = single file <code>logs/current.csv</code> on server.</div>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([50.45, 30.523], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+
+    const truthLine = L.polyline([], { color: 'green', weight: 4 }).addTo(map);
+    const attackLine = L.polyline([], { color: 'red', weight: 4 }).addTo(map);
+
+    let evtSource = null;
+    let running = false;
+
+    const statusBox = document.getElementById('statusBox');
+    function setStatus(text, ok=true) {
+        statusBox.textContent = text;
+        statusBox.classList.toggle('ok', ok);
+        statusBox.classList.toggle('bad', !ok);
+    }
+
+    async function apiPost(url, body) {
+        const r = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        const txt = await r.text();
+        try { return JSON.parse(txt); } catch { return { ok:false, error:"Non-JSON response", raw: txt }; }
+    }
+
+    async function apiGet(url) {
+        const r = await fetch(url);
+        const txt = await r.text();
+        try { return JSON.parse(txt); } catch { return { ok:false, error:"Non-JSON response", raw: txt }; }
+    }
+
+    function stopStream() {
+        if (evtSource) evtSource.close();
+        evtSource = null;
+        running = false;
+        document.getElementById('stopLive').disabled = true;
+        document.getElementById('startLive').disabled = false;
+        setStatus("Stopped.");
+    }
+
+    document.getElementById('selectFlight').onclick = async () => {
+        const flightId = document.getElementById('flightId').value.trim();
+
+        if (!flightId) {
+            alert('flightId is empty');
+            return;
+        }
+
+        const res = await apiPost('/api/selectFlight', { flightId });
+
+        if (res.ok) {
+            alert('Selected flightId: ' + flightId);
+        } else {
+            alert(res.error || 'Error selecting flight');
+        }
+    };
+
+
+    document.getElementById('applyAttack').onclick = async () => {
+        const enabled = document.getElementById('enabled').value === 'true';
+        const type = document.getElementById('atype').value;
+        const biasMeters = Number(document.getElementById('bias').value);
+        const driftMps = Number(document.getElementById('drift').value);
+        const noiseSigmaMeters = Number(document.getElementById('sigma').value);
+
+        const res = await apiPost('/api/attack', { enabled, type, biasMeters, driftMps, noiseSigmaMeters });
+        if (res.ok) setStatus("Attack updated: " + (enabled ? "ON" : "OFF") + " " + type);
+        else setStatus(res.error || "Attack update failed", false);
+    };
+
+    document.getElementById('startLive').onclick = async () => {
+        if (running) return;
+
+        truthLine.setLatLngs([]);
+        attackLine.setLatLngs([]);
+
+        const flightId = document.getElementById('flightId').value.trim();
+        if (!flightId) { setStatus("flightId is empty", false); return; }
+
+        const sel = await apiPost('/api/selectFlight', { flightId: flightId });
+        if (!sel.ok) {
+            setStatus(sel.error || "Select flight failed", false);
+            return;
+        }
+
+        if (evtSource) evtSource.close();
+
+        running = true;
+        document.getElementById('stopLive').disabled = false;
+        document.getElementById('startLive').disabled = true;
+
+        setStatus("LIVE started for flightId=" + flightId);
+
+        evtSource = new EventSource('/api/liveStream');
+
+        evtSource.onmessage = (ev) => {
+            let msg = null;
+            try { msg = JSON.parse(ev.data); } catch { return; }
+
+            if (msg.error) {
+                setStatus("ERROR: " + msg.error, false);
+                return;
+            }
+
+            const type = msg.type || 'data';
+
+            if (type === 'error') {
+                setStatus("ERROR: " + (msg.message || "unknown"), false);
+                return;
+            }
+
+            if (type === 'heartbeat' || type === 'info') {
+                setStatus((type.toUpperCase()) + ": " + (msg.message || "…"), true);
+                return;
+            }
+
+            if (type === 'data') {
+                if (!msg.truth || !msg.attack) return;
+
+                truthLine.addLatLng([msg.truth.lat, msg.truth.lon]);
+                attackLine.addLatLng([msg.attack.lat, msg.attack.lon]);
+
+                const pts = truthLine.getLatLngs();
+                if (pts.length === 2) {
+                    map.fitBounds(truthLine.getBounds(), { padding:[20,20] });
+                }
+
+                setStatus("Last t=" + (msg.t || "n/a") + "  truth=(" + msg.truth.lat.toFixed(4) + "," + msg.truth.lon.toFixed(4) + ")");
+            }
+        };
+
+        evtSource.onerror = (e) => {
+            setStatus("SSE disconnected (check backend / token / flightId).", false);
+            stopStream();
+        };
+    };
+
+    document.getElementById('stopLive').onclick = () => stopStream();
+
+    document.getElementById('refreshCurrent').onclick = async () => {
+        const res = await apiGet('/api/current');
+        document.getElementById('currentOut').textContent = JSON.stringify(res, null, 2);
+    };
+
+    document.getElementById('downloadLog').onclick = () => {
+        window.location.href = "/api/log/downloadCurrent";
+    };
+</script>
+</body>
+</html>
