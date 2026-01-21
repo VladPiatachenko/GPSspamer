@@ -2,11 +2,13 @@ name: Build and push to deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+
+permissions:
+  contents: write
 
 jobs:
-  build-and-deploy:
+  build-and-push-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,13 +21,58 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: "21"
 
       - name: Make mvnw executable
         run: chmod +x mvnw
 
       - name: Build project
-        run: ./mvnw clean package -DskipTests
+        run: ./mvnw -B clean package -DskipTests
+
+      - name: Select JAR artifact
+        id: jar
+        shell: bash
+        run: |
+          set -e
+          JAR="$(ls -1 target/*.jar | grep -vE '(sources|javadoc|original)\.jar$' | head -n 1)"
+          if [ -z "$JAR" ]; then
+            echo "No jar found in target/"
+            ls -la target || true
+            exit 1
+          fi
+          echo "jar_path=$JAR" >> "$GITHUB_OUTPUT"
+          echo "Picked: $JAR"
+
+      - name: Commit JAR to deploy branch
+        shell: bash
+        run: |
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin deploy || true
+
+          rm -rf deploy-worktree
+          if git show-ref --verify --quiet refs/remotes/origin/deploy; then
+            git worktree add deploy-worktree origin/deploy
+          else
+            git worktree add -B deploy deploy-worktree
+          fi
+
+          cp "${{ steps.jar.outputs.jar_path }}" deploy-worktree/app.jar
+
+          cd deploy-worktree
+          git add app.jar
+
+          if git diff --cached --quiet; then
+            echo "No changes in app.jar — skipping commit."
+            exit 0
+          fi
+
+          git commit -m "Update jar from ${GITHUB_SHA}"
+          git push origin HEAD:deploy
+
 
       - name: Prepare deploy branch
         run: |
@@ -48,3 +95,4 @@ jobs:
           git add app.jar
           git commit -m "Update jar"
           git push --force origin deploy
+
