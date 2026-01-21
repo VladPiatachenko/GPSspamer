@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <!-- =========================================================
+         БАЗОВІ META-ТЕГИ ТА SEO
+         Пояснення:
+         - title / description / canonical потрібні для коректного
+           відображення в пошукових системах (snippet, релевантність).
+         - viewport забезпечує адаптивність (mobile-friendly).
+         ========================================================= -->
+
+    <!-- Кодування документа (важливо для української мови) -->
+    <meta charset="utf-8">
+
+    <!-- Сумісність зі старими браузерами (історична практика) -->
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+
+    <!--
+        META VIEWPORT — КЛЮЧ ДО АДАПТИВНОСТІ
+        Без viewport сторінка на телефоні буде “зменшеною” десктопною версією.
+        З viewport браузер правильно масштабує макет під ширину екрана.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Заголовок сторінки (важливий для SEO та вкладки браузера) -->
+    <title>GPSspamer — GPS Spoofing Simulator</title>
+
+    <!-- Опис сторінки (часто показується у пошуку під заголовком) -->
+    <meta name="description"
+          content="Лендінг бакалаврської роботи: сервіс для симуляції GPS spoofing атак і дослідження методів виявлення підміни координат.">
+
+    <!-- Ключові слова (не критично для сучасного SEO, але формально допускається) -->
+    <meta name="keywords"
+          content="GPS spoofing, UAV, cybersecurity, telemetry, Spring Boot, anomaly detection">
+
+    <!-- Автор -->
+    <meta name="author" content="Vladyslav Piatachenko">
+
+    <!-- Canonical — основна адреса сторінки (щоб уникати дублювання у пошуковиках) -->
+    <link rel="canonical" href="https://<USERNAME>.github.io/<REPO>/">
+
+    <!-- =========================================================
+         ROBOTS.TXT ТА SITEMAP
+         Пояснення:
+         - robots.txt: правила для ботів (індексація/заборони)
+         - sitemap.xml: карта сайту для пошукових ботів
+         Важливо: це ОКРЕМІ файли в корені репозиторію.
+         Тут лише “вказівники” для ботів.
+         ========================================================= -->
+    <meta name="robots" content="index, follow">
+    <link rel="sitemap" type="application/xml" href="sitemap.xml">
+
+    <!-- =========================================================
+         FAVICON
+         Пояснення:
+         Набір іконок для вкладок, закладок, мобільних ярликів.
+         Шляхи підставляй свої, які ти згенерив.
+         ========================================================= -->
+    <link rel="icon" href="assets/favicon/favicon.ico" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon/favicon.svg">
+    <link rel="apple-touch-icon" href="assets/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="assets/favicon/site.webmanifest">
+
+    <!-- =========================================================
+         OPEN GRAPH (OG)
+         Пояснення:
+         Open Graph мета-теги використовують Facebook/Telegram/Discord
+         та інші сервіси, щоб сформувати “картку прев’ю” посилання:
+         - заголовок
+         - опис
+         - картинка
+         ========================================================= -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="GPSspamer — симулятор GPS spoofing атак">
+    <meta property="og:description"
+          content="Сервіс для моделювання атак підміни GPS-координат і тестування алгоритмів виявлення.">
+    <meta property="og:url" content="https://<USERNAME>.github.io/<REPO>/">
+    <meta property="og:image" content="https://<USERNAME>.github.io/<REPO>/assets/images/hero.webp">
+
+    <!-- =========================================================
+         TWITTER CARDS (X)
+         Пояснення:
+         Twitter/X має власний набір meta-тегів для прев’ю карток.
+         summary_large_image — прев’ю з великою картинкою.
+         Навіть якщо Twitter не критичний, для студентського прикладу
+         це демонструє “повний стек” соціальних метаданих.
+         ========================================================= -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="GPSspamer — GPS Spoofing Simulator">
+    <meta name="twitter:description"
+          content="Симуляція BIAS/DRIFT/NOISE атак з логуванням truth vs attacked координат.">
+    <meta name="twitter:image" content="https://<USERNAME>.github.io/<REPO>/assets/images/hero.webp">
+
+    <!-- =========================================================
+         CSS RESET / NORMALIZE + СТИЛІ
+         Пояснення:
+         - Reset/normalize вирівнює базові стилі різних браузерів.
+         - Винесення стилів в styles.css — хороша практика і вимога ЛР.
+         ========================================================= -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- =========================================================
+         SCHEMA.ORG (JSON-LD)
+         Пояснення:
+         Структуровані дані для пошукових систем.
+         Дозволяють "машинно" описати сторінку, автора та організацію.
+         ========================================================= -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "GPSspamer Landing",
+            "url": "https://<USERNAME>.github.io/<REPO>/",
+            "description": "Landing page for a bachelor thesis project on GPS spoofing simulation.",
+            "inLanguage": "uk",
+            "author": {
+                "@type": "Person",
+                "name": "Vladyslav Piatachenko",
+                "email": "vl.piatachenko@cs.sumdu.edu.ua",
+                "affiliation": {
+                    "@type": "CollegeOrUniversity",
+                    "name": "Sumy State University"
+                }
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+<!-- =========================================================
+     ACCESSIBILITY (A11Y): SKIP LINK
+     Пояснення:
+     Користувачі клавіатури (Tab) можуть одразу перейти до main,
+     минаючи навігацію. Це стандартна практика доступності.
+     ========================================================= -->
+<a href="#main" class="skip-link">Перейти до основного контенту</a>
+
+<!-- =========================================================
+     SEMANTIC HEADER + NAV
+     Пояснення:
+     Використовуємо семантичні теги: header/nav.
+     aria-label пояснює призначення навігації скрінрідеру.
+     ========================================================= -->
+<header role="banner">
+    <div class="container">
+        <nav aria-label="Головна навігація">
+            <!--
+                Навігація побудована на якорях (anchor links),
+                які ведуть до секцій сторінки.
+                Відображення в один рядок досягається через CSS (flex).
+            -->
+            <ul class="nav">
+                <li><a href="#about">Про роботу</a></li>
+                <li><a href="#goal">Мета</a></li>
+                <li><a href="#tasks">Завдання</a></li>
+                <li><a href="#data-source">Джерело даних</a></li>
+                <li><a href="#attack-examples">Приклади атак</a></li>
+                <li><a href="#app-demo">Демо застосунку</a></li>
+                <li><a href="#contacts">Контакти</a></li>
+            </ul>
+        </nav>
+
+    </div>
+</header>
+
+<!-- =========================================================
+     MAIN
+     Пояснення:
+     main містить основний контент. Це важливо для семантики та A11y.
+     ========================================================= -->
+<main id="main" role="main">
+
+    <!-- =====================================================
+         HERO SECTION
+         Пояснення:
+         - h1 — єдиний головний заголовок сторінки (SEO + структура)
+         - figure/figcaption — семантика для ілюстрації
+         - img має alt для доступності та SEO
+         ===================================================== -->
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="container hero-grid">
+            <div class="hero-text">
+                <h1 id="hero-title">Симулятор GPS spoofing атак</h1>
+
+                <p>
+                    Бакалаврська робота, присвячена розробці сервісу для отримання реальної телеметрії польоту
+                    та моделювання атак підміни координат з метою дослідження алгоритмів виявлення GPS-spoofing.
+                </p>
+
+                <!-- Назва українською та англійською (вимога ЛР/контенту) -->
+                <p class="titles">
+                    <strong>Назва (UA):</strong> Симулятор GPS spoofing атак для дослідження виявлення підміни координат<br>
+                    <strong>Title (EN):</strong> GPS Spoofing Simulation Service for Detection Research
+                </p>
+
+                <!-- Короткий опис до 300 символів (вимога) -->
+                <p class="short-abstract">
+                    <strong>Короткий опис:</strong>
+                    Сервіс GPSspamer отримує реальні координати за flightId, застосовує атаки BIAS/DRIFT/NOISE
+                    та формує логи truth vs attacked для дослідження методів виявлення GPS-spoofing.
+                </p>
+
+                <!-- Ключові слова (вимога) -->
+                <p>
+                    <strong>Ключові слова:</strong> GPS spoofing, UAV, telemetry, Spring Boot, anomaly detection
+                </p>
+            </div>
+
+            <figure class="hero-figure">
+                <img src="assets/images/full.png"
+                     alt="Візуалізація підміни координат"
+                     loading="lazy" width="1200" height="700">
+                <figcaption>Істинний та атакований GPS-трек (приклад візуалізації).</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         ABOUT: актуальність теми
+         ===================================================== -->
+    <section id="about" class="section" aria-labelledby="about-title">
+        <div class="container">
+            <h2 id="about-title">Актуальність теми</h2>
+            <p>
+                GPS spoofing є однією з ключових загроз для навігаційних систем БПЛА та літальних апаратів.
+                Для створення ефективних алгоритмів захисту необхідні контрольовані дані з відомими параметрами атак.
+            </p>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         GOAL: мета дослідження
+         ===================================================== -->
+    <section id="goal" class="section" aria-labelledby="goal-title">
+        <div class="container">
+            <h2 id="goal-title">Мета дослідження</h2>
+            <p>
+                Розробити програмний сервіс для симуляції GPS spoofing атак та формування розмічених наборів даних
+                <em>truth vs attacked</em> для аналізу та тестування алгоритмів виявлення.
+            </p>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         TASKS: 3–5 основних завдань (вимога)
+         ===================================================== -->
+    <section id="tasks" class="section" aria-labelledby="tasks-title">
+        <div class="container">
+            <h2 id="tasks-title">Основні завдання</h2>
+            <ol>
+                <li>Отримання телеметрії за ідентифікатором польоту (flightId).</li>
+                <li>Реалізація моделей атак: BIAS, DRIFT, NOISE.</li>
+                <li>Паралельна обробка істинних та атакованих координат.</li>
+                <li>Потокова передача даних (SSE) для спостереження у реальному часі.</li>
+                <li>Журналювання даних у CSV для офлайн-аналізу.</li>
+            </ol>
+
+            <!-- Нижчий заголовок (демонстрація h1-h6 структури) -->
+            <h3>Типи атак</h3>
+            <ul>
+                <li><strong>BIAS</strong> — сталий зсув у метрах.</li>
+                <li><strong>DRIFT</strong> — дрейф з часом (м/с).</li>
+                <li><strong>NOISE</strong> — випадковий шум із sigma (метри).</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         DATA SOURCE: скріншот джерела телеметрії
+         ===================================================== -->
+    <section id="data-source" class="section" aria-labelledby="data-source-title">
+        <div class="container">
+            <h2 id="data-source-title">Джерело даних телеметрії</h2>
+            <p>
+                Отримання реальних координат здійснюється за flightId через інтеграцію з зовнішнім сервісом
+                моніторингу авіаруху (наприклад, FlightRadar24). Це дозволяє відстежувати реальний рух об’єкта
+                та накладати контрольовані атаки.
+            </p>
+
+            <figure class="figure">
+                <img src="assets/images/source.jpg"
+                     alt="Скріншот FlightRadar24 з вибраним рейсом і траєкторією польоту"
+                     loading="lazy" width="1200" height="700">
+                <figcaption>Приклад: вибір рейсу та спостереження за траєкторією у реальному часі.</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         ATTACK EXAMPLES: графіки/траєкторії з експериментів
+         ===================================================== -->
+    <section id="attack-examples" class="section" aria-labelledby="attack-examples-title">
+        <div class="container">
+            <h2 id="attack-examples-title">Приклади атак і траєкторій</h2>
+
+            <p>
+                Нижче наведено приклади експериментальних траєкторій (істинні дані та підміна),
+                використані в публікації:
+                <a href="https://visnikkrnu.kdu.edu.ua/statti/2025_3_90.pdf" target="_blank" rel="noopener">
+                    Visnyk KrNU, 2025 (PDF)
+                </a>.
+                Зеленим позначено нормальну траєкторію, червоним — точки після GPS-spoofing.
+            </p>
+
+            <!-- Галерея: демонстрація адаптивності (grid + media queries у styles.css) -->
+            <div class="gallery" role="list" aria-label="Галерея прикладів GPS-spoofing">
+                <figure class="card" role="listitem">
+                    <img src="assets/images/dataset1.jpg"
+                         alt="Графік: траєкторія руху та зона GPS-спуфінгу — приклад 1"
+                         loading="lazy" width="1200" height="700">
+                    <figcaption>Приклад 1: підміна координат (normal trajectory vs spoofed points).</figcaption>
+                </figure>
+
+                <figure class="card" role="listitem">
+                    <img src="assets/images/dataset2.jpg"
+                         alt="Графік: траєкторія руху апарата з підміною координат — приклад 2"
+                         loading="lazy" width="1200" height="700">
+                    <figcaption>Приклад 2: сценарій з характерним дрейфом/відхиленням.</figcaption>
+                </figure>
+
+                <figure class="card" role="listitem">
+                    <img src="assets/images/dataset3.jpg"
+                         alt="Графік: траєкторія руху та зона GPS-спуфінгу — приклад 3"
+                         loading="lazy" width="1200" height="700">
+                    <figcaption>Приклад 3: інший сценарій підміни GPS координат.</figcaption>
+                </figure>
+            </div>
+
+            <!-- Додатковий підрозділ для датасетів зі статті -->
+            <h3>Дані та датасети зі статті</h3>
+            <ul>
+                <li><strong>Реальні траєкторії:</strong> телеметрія за flightId (інтеграція з FR24/аналогом).</li>
+                <li><strong>Синтетичні атаки:</strong> BIAS / DRIFT / NOISE з параметрами (метри, м/с, sigma).</li>
+                <li><strong>Датасети (з публікації):</strong> додай тут точні назви наборів даних з PDF (2–4 пункти).</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         APP DEMO: скріншот реалізованого сервісу/інтерфейсу
+         ===================================================== -->
+    <section id="app-demo" class="section" aria-labelledby="app-demo-title">
+        <div class="container">
+            <h2 id="app-demo-title">Реалізований програмний застосунок</h2>
+            <p>
+                Веб-інтерфейс дозволяє обрати flightId, налаштувати тип атаки (BIAS / DRIFT / NOISE),
+                спостерігати різницю між істинними та атакованими координатами, а також формувати CSV-лог
+                для подальшого аналізу.
+            </p>
+
+            <figure class="figure">
+                <img src="assets/images/result.jpg"
+                     alt="Скріншот веб-інтерфейсу GPSspamer з картою та налаштуваннями атаки"
+                     loading="lazy" width="1200" height="700">
+                <figcaption>UI: конфігурація атаки та візуалізація траєкторій (truth vs attacked).</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         RESULTS: очікувані результати (вимога)
+         ===================================================== -->
+    <section id="results" class="section" aria-labelledby="results-title">
+        <div class="container">
+            <h2 id="results-title">Очікувані результати</h2>
+            <ul>
+                <li>Функціональний backend-сервіс для симуляції GPS spoofing атак у реальному часі.</li>
+                <li>Генерація розмічених даних (truth vs attacked) для офлайн-досліджень.</li>
+                <li>Інтерфейс інтеграції з системами виявлення атак (REST/SSE).</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         CONTACTS: контактна інформація (вимога)
+         ===================================================== -->
+    <section id="contacts" class="section" aria-labelledby="contacts-title">
+        <div class="container">
+            <h2 id="contacts-title">Контактна інформація</h2>
+
+            <!-- address — семантичний тег для контактів -->
+            <address class="contact">
+                <strong>Автор:</strong> Vladyslav Piatachenko<br>
+                <strong>Email:</strong>
+                <a href="mailto:vl.piatachenko@cs.sumdu.edu.ua">vl.piatachenko@cs.sumdu.edu.ua</a><br>
+                <strong>GitHub:</strong>
+                <a href="https://github.com/VladPiatachenko/GPSspamer" target="_blank" rel="noopener">
+                    github.com/VladPiatachenko/GPSspamer
+                </a>
+            </address>
+        </div>
+    </section>
+
+</main>
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
+<footer role="contentinfo">
+    <div class="container">
+        © <span id="y"></span> GPSspamer — research & education
+    </div>
+</footer>
+
+<!-- Маленький скрипт для року в футері -->
+<script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
